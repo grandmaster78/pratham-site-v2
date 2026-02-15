@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 
 /**
  * High-performance cursor-following gradient glow.
- * Uses transform for GPU acceleration (no layout thrashing).
+ * Respects prefers-reduced-motion for accessibility.
  */
 export function CursorGlow() {
+  const prefersReducedMotion = useReducedMotion();
+  if (prefersReducedMotion) return null;
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
   const posRef = useRef({ x: 0, y: 0 });

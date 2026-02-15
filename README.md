@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Personalization Checklist
+
+Before deploying, add:
+
+- **`public/profile.jpg`** — Your professional photo for the hero section
+- **`public/resume.pdf`** — Your CV (linked as "View CV")
+- **`.env.local`** — Copy from `.env.example` and add your Formspree form ID for the contact form
+- **Email** — Update `mailto:pratham@example.com` in `src/app/page.tsx` with your real email
+- **metadata** — Update the `url` in `src/app/layout.tsx` if your domain differs from prathamsarin.com
+
 ## Getting Started
 
 First, run the development server:
