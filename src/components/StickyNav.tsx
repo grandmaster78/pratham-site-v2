@@ -8,6 +8,7 @@ const navLinks = [
   { href: "#leadership", label: "Leadership" },
   { href: "#amazon", label: "Amazon" },
   { href: "#timeline", label: "Timeline" },
+  { href: "#agents", label: "AI Agents" },
   { href: "#personal", label: "Personal" },
   { href: "#field-notes", label: "Field Notes" },
   { href: "#contact", label: "Contact" },
