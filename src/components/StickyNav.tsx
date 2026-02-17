@@ -14,6 +14,11 @@ const navLinks = [
   { href: "#contact", label: "Contact" },
 ];
 
+const appLinks = [
+  { href: "/analyst", label: "Analyst" },
+  { href: "/ads-optimizer", label: "Ads Optimizer" },
+];
+
 export function StickyNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -50,6 +55,16 @@ export function StickyNav() {
                 {link.label}
               </a>
             ))}
+            <span className="mx-1 h-4 w-px bg-zinc-800" aria-hidden />
+            {appLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="px-3 py-2 font-mono text-xs text-[#FF9900]/70 hover:text-[#FF9900] transition-colors rounded-lg hover:bg-zinc-800/50"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
           {/* Mobile menu button */}
@@ -74,6 +89,17 @@ export function StickyNav() {
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className="px-4 py-3 font-mono text-sm text-zinc-500 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+              <div className="my-2 border-t border-zinc-800/50" />
+              {appLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="px-4 py-3 font-mono text-sm text-[#FF9900]/70 hover:text-[#FF9900] hover:bg-zinc-800/50 rounded-lg transition-colors"
                 >
                   {link.label}
                 </a>

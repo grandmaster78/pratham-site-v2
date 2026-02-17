@@ -515,46 +515,88 @@ export default function Home() {
             APIs, and a polished interface.
           </motion.p>
 
-          <motion.a
-            href="/analyst"
-            className="group mt-8 block rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition-all hover:border-emerald-500/40 hover:bg-zinc-900/50 sm:p-8"
-            {...m(reduceMotion, 0.36)}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
-                <TrendingUp className="h-6 w-6 text-emerald-400" />
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <motion.a
+              href="/analyst"
+              className="group block rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition-all hover:border-emerald-500/40 hover:bg-zinc-900/50 sm:p-8"
+              {...m(reduceMotion, 0.36)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                  <TrendingUp className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-1 font-mono text-[10px] tracking-wider text-zinc-400 transition-colors group-hover:border-emerald-500/30 group-hover:text-emerald-400">
+                  <Code className="h-3 w-3" />
+                  LIVE
+                </div>
               </div>
-              <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-1 font-mono text-[10px] tracking-wider text-zinc-400 transition-colors group-hover:border-emerald-500/30 group-hover:text-emerald-400">
-                <Code className="h-3 w-3" />
-                LIVE
+              <h3 className="mt-5 text-xl font-semibold text-white">
+                Institutional Earnings Strategist
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+                AI-powered financial terminal that fetches live SEC filing data,
+                renders QoQ revenue and net income charts, and generates a
+                morning-briefing memo with a BUY/SELL verdict — powered by Claude
+                3.5 Sonnet on Amazon Bedrock.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Next.js", "AWS Lambda", "Amazon Bedrock", "Claude 3.5", "FMP API", "Recharts"].map(
+                  (tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-md border border-zinc-800 bg-zinc-900/50 px-2.5 py-1 font-mono text-[11px] text-zinc-500"
+                    >
+                      {tag}
+                    </span>
+                  )
+                )}
               </div>
-            </div>
-            <h3 className="mt-5 text-xl font-semibold text-white">
-              Institutional Earnings Strategist
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-500">
-              AI-powered financial terminal that fetches live SEC filing data,
-              renders QoQ revenue and net income charts, and generates a
-              morning-briefing memo with a BUY/SELL verdict — powered by Claude
-              3.5 Sonnet on Amazon Bedrock.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {["Next.js", "AWS Lambda", "Amazon Bedrock", "Claude 3.5", "FMP API", "Recharts"].map(
-                (tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-md border border-zinc-800 bg-zinc-900/50 px-2.5 py-1 font-mono text-[11px] text-zinc-500"
-                  >
-                    {tag}
-                  </span>
-                )
-              )}
-            </div>
-            <div className="mt-6 inline-flex items-center gap-2 font-mono text-sm text-emerald-400 transition-colors group-hover:text-emerald-300">
-              Launch Dashboard
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
-          </motion.a>
+              <div className="mt-6 inline-flex items-center gap-2 font-mono text-sm text-emerald-400 transition-colors group-hover:text-emerald-300">
+                Launch Dashboard
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </div>
+            </motion.a>
+
+            <motion.a
+              href="/ads-optimizer"
+              className="group block rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition-all hover:border-[#FF9900]/40 hover:bg-zinc-900/50 sm:p-8"
+              {...m(reduceMotion, 0.38)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#FF9900]/30 bg-[#FF9900]/10">
+                  <Target className="h-6 w-6 text-[#FF9900]" />
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-1 font-mono text-[10px] tracking-wider text-zinc-400 transition-colors group-hover:border-[#FF9900]/30 group-hover:text-[#FF9900]">
+                  <Code className="h-3 w-3" />
+                  LIVE
+                </div>
+              </div>
+              <h3 className="mt-5 text-xl font-semibold text-white">
+                Amazon Ads Optimizer
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+                Agentic campaign optimizer that connects to the Amazon Ads MCP
+                Server, lists your accounts and campaigns, and uses Claude on
+                Bedrock to recommend bid and budget optimizations in real time.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {["Amazon Ads MCP", "Login with Amazon", "Bedrock", "Claude 3.5", "MCP SDK", "Streaming"].map(
+                  (tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-md border border-zinc-800 bg-zinc-900/50 px-2.5 py-1 font-mono text-[11px] text-zinc-500"
+                    >
+                      {tag}
+                    </span>
+                  )
+                )}
+              </div>
+              <div className="mt-6 inline-flex items-center gap-2 font-mono text-sm text-[#FF9900] transition-colors group-hover:text-[#FF9900]/80">
+                Launch Optimizer
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              </div>
+            </motion.a>
+          </div>
         </section>
 
         {/* ═══════════════════════════════════════════════
