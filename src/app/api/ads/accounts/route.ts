@@ -47,9 +47,9 @@ export async function GET(request: NextRequest) {
 
   const userHash = await hashToken(accessToken);
 
-  // --- Tier 1: DynamoDB cache ---
+  // --- Tier 1: DynamoDB cache (only serve if it came from live MCP data) ---
   const cached = await getCached<AdsAccount[]>(userHash, CACHE_SK);
-  if (cached) {
+  if (cached && cached.source === "mcp") {
     const totalCount = cached.data.length;
     const start = (page - 1) * pageSize;
     return NextResponse.json({
@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await mcpToolCall(accessToken, "listProfiles", {});
+    console.log("[accounts] MCP listProfiles response:", JSON.stringify(result).slice(0, 500));
 
     if (result.content && Array.isArray(result.content)) {
       for (const item of result.content) {

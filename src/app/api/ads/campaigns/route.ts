@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
   const userHash = await hashToken(accessToken);
   const cacheSK = `CAMPAIGNS#${accountId}`;
 
-  // --- Tier 1: DynamoDB cache ---
+  // --- Tier 1: DynamoDB cache (only serve if it came from live MCP data) ---
   const cached = await getCached<Campaign[]>(userHash, cacheSK);
-  if (cached) {
+  if (cached && cached.source === "mcp") {
     const totalCount = cached.data.length;
     const start = (page - 1) * pageSize;
     return NextResponse.json({
@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
     const result = await mcpToolCall(accessToken, "listCampaigns", {
       profileId: accountId,
     });
+    console.log("[campaigns] MCP listCampaigns response:", JSON.stringify(result).slice(0, 500));
 
     if (result.content && Array.isArray(result.content)) {
       for (const item of result.content) {
