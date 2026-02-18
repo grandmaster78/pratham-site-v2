@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { Suspense, useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -24,7 +24,7 @@ interface SelectedAccount {
   currency: string;
 }
 
-export default function AdsOptimizerPage() {
+function AdsOptimizerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -265,5 +265,25 @@ export default function AdsOptimizerPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+function AdsOptimizerFallback() {
+  return (
+    <div className="min-h-screen bg-[#050505] font-sans text-white flex items-center justify-center">
+      <motion.div
+        className="h-8 w-8 rounded-full border-2 border-[#FF9900]/30 border-t-[#FF9900]"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
+  );
+}
+
+export default function AdsOptimizerPage() {
+  return (
+    <Suspense fallback={<AdsOptimizerFallback />}>
+      <AdsOptimizerContent />
+    </Suspense>
   );
 }
