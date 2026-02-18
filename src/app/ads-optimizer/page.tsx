@@ -8,6 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { LoginButton } from "./components/LoginButton";
 import { AccountList } from "./components/AccountList";
 import { CampaignList } from "./components/CampaignList";
@@ -24,6 +25,8 @@ interface SelectedAccount {
 }
 
 export default function AdsOptimizerPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [selectedAccount, setSelectedAccount] =
     useState<SelectedAccount | null>(null);
@@ -39,24 +42,62 @@ export default function AdsOptimizerPage() {
       .catch(() => setAuthenticated(false));
   }, []);
 
+  // Sync URL -> state on mount and when searchParams change (e.g. back/forward)
+  useEffect(() => {
+    const accountId = searchParams.get("account");
+    const name = searchParams.get("name");
+    if (accountId && name) {
+      let decodedName = name;
+      try {
+        decodedName = decodeURIComponent(name);
+      } catch {
+        // Malformed percent-encoding (e.g. %%) can throw
+      }
+      setSelectedAccount({
+        accountId,
+        name: decodedName,
+        marketplace: searchParams.get("marketplace") ?? "US",
+        type: searchParams.get("type") ?? "seller",
+        currency: searchParams.get("currency") ?? "USD",
+      });
+    } else {
+      setSelectedAccount(null);
+      setCampaigns([]);
+      setHighlightedCampaignIds(new Set());
+    }
+  }, [searchParams]);
+
   const handleLogout = async () => {
     await fetch("/api/auth/session", { method: "DELETE" });
     setAuthenticated(false);
     setSelectedAccount(null);
     setCampaigns([]);
+    router.replace("/ads-optimizer");
   };
 
-  const handleSelectAccount = (account: SelectedAccount) => {
-    setSelectedAccount(account);
-    setCampaigns([]);
-    setHighlightedCampaignIds(new Set());
-  };
+  const handleSelectAccount = useCallback(
+    (account: SelectedAccount) => {
+      setSelectedAccount(account);
+      setCampaigns([]);
+      setHighlightedCampaignIds(new Set());
+      const params = new URLSearchParams({
+        account: account.accountId,
+        name: account.name,
+        marketplace: account.marketplace,
+        type: account.type,
+        currency: account.currency,
+      });
+      router.push(`/ads-optimizer?${params.toString()}`, { scroll: false });
+    },
+    [router],
+  );
 
-  const handleBackToAccounts = () => {
+  const handleBackToAccounts = useCallback(() => {
     setSelectedAccount(null);
     setCampaigns([]);
     setHighlightedCampaignIds(new Set());
-  };
+    router.push("/ads-optimizer", { scroll: false });
+  }, [router]);
 
   const handleCampaignsLoaded = useCallback((loaded: Campaign[]) => {
     setCampaigns(loaded);

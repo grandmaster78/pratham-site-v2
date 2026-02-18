@@ -12,14 +12,13 @@ function getRedirectUri() {
 
 /**
  * Build the LWA authorization URL for the OAuth2 Authorization Code Grant.
- * LWA uses standard scopes (profile, profile:user_id, postal_code).
- * Advertising API permissions are granted through the API app registration,
- * not through the OAuth scope parameter.
+ * Standard LWA profile scope — advertising permissions are granted through
+ * the Amazon Ads API app registration, not through the OAuth scope.
  */
 export function buildAuthorizationUrl(state: string): string {
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
-    scope: "profile",
+    scope: "advertising::campaign_management",
     response_type: "code",
     redirect_uri: getRedirectUri(),
     state,

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { getValidAccessToken } from "@/lib/amazon-auth";
-import { mcpToolCall } from "@/lib/mcp-client";
 import { hashToken, getCached, setCache, TTL } from "@/lib/dynamo-cache";
 import { getDemoAccounts } from "@/lib/demo-data";
 
@@ -11,6 +10,7 @@ export interface AdsAccount {
   marketplace: string;
   type: string;
   currency: string;
+  entityId?: string;
 }
 
 interface AccountsResponse {
@@ -22,10 +22,11 @@ interface AccountsResponse {
 }
 
 const CACHE_SK = "ACCOUNTS";
+const PROFILES_API_HOST = "https://advertising-api.amazon.com";
 
 /**
  * GET /api/ads/accounts?page=1&pageSize=10
- * 3-tier: DynamoDB cache -> MCP server -> demo fallback
+ * Fetches profiles from the Amazon Ads REST API (/v2/profiles).
  */
 export async function GET(request: NextRequest) {
   const session = await getSession();
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
   const userHash = await hashToken(accessToken);
 
-  // --- Tier 1: DynamoDB cache (only serve if it came from live MCP data) ---
+  // --- Tier 1: DynamoDB cache ---
   const cached = await getCached<AdsAccount[]>(userHash, CACHE_SK);
   if (cached && cached.source === "mcp") {
     const totalCount = cached.data.length;
@@ -61,79 +62,61 @@ export async function GET(request: NextRequest) {
     } satisfies AccountsResponse);
   }
 
-  // --- Tier 2: MCP server ---
-  let profiles: AdsAccount[] = [];
+  // --- Tier 2: Profiles REST API ---
+  let accounts: AdsAccount[] = [];
   let source: "mcp" | "demo" = "mcp";
 
   try {
-    const result = await mcpToolCall(accessToken, "listProfiles", {});
-    console.log("[accounts] MCP listProfiles response:", JSON.stringify(result).slice(0, 500));
+    const clientId = process.env.AMAZON_ADS_CLIENT_ID ?? "";
+    const res = await fetch(`${PROFILES_API_HOST}/v2/profiles`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Amazon-Advertising-API-ClientId": clientId,
+        "Content-Type": "application/json",
+      },
+    });
 
-    if (result.content && Array.isArray(result.content)) {
-      for (const item of result.content) {
-        if (
-          typeof item === "object" &&
-          item !== null &&
-          "text" in item &&
-          typeof item.text === "string"
-        ) {
-          try {
-            const parsed = JSON.parse(item.text);
-            const rawProfiles = Array.isArray(parsed)
-              ? parsed
-              : parsed.profiles ?? [];
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            profiles = rawProfiles.map((p: any) => {
-              const info = p.accountInfo ?? {};
-              return {
-                accountId: String(
-                  p.profileId ?? p.accountId ?? p.id ?? "",
-                ),
-                name: String(
-                  info.name ?? p.name ?? p.accountName ?? "Unnamed Account",
-                ),
-                marketplace: String(
-                  p.countryCode ?? p.marketplace ?? "US",
-                ),
-                type: String(info.type ?? p.type ?? "seller"),
-                currency: String(
-                  p.currencyCode ?? p.currency ?? "USD",
-                ),
-              };
-            });
-          } catch {
-            // Not JSON, skip
-          }
-        }
-      }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Profiles API ${res.status}: ${text.slice(0, 300)}`);
     }
 
-    if (profiles.length > 0) {
-      await setCache(userHash, CACHE_SK, profiles, "mcp", TTL.ACCOUNTS_LIVE);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any[] = await res.json();
+    console.log("[accounts] Profiles API returned", data.length, "profiles");
+
+    accounts = data.map((p) => {
+      const info = p.accountInfo ?? {};
+      return {
+        accountId: String(p.profileId ?? ""),
+        name: String(info.name ?? p.name ?? "Unnamed Account"),
+        marketplace: String(p.countryCode ?? "US"),
+        type: String(info.type ?? "seller"),
+        currency: String(p.currencyCode ?? "USD"),
+        entityId: String(info.id ?? ""),
+      };
+    });
+
+    if (accounts.length > 0) {
+      await setCache(userHash, CACHE_SK, accounts, "mcp", TTL.ACCOUNTS_LIVE);
     }
   } catch (error) {
-    console.warn("MCP listProfiles failed, falling back to demo:", error);
+    console.warn("[accounts] Profiles API failed, falling back to demo:", error);
     source = "demo";
   }
 
   // --- Tier 3: Demo fallback ---
-  if (profiles.length === 0 && source !== "mcp") {
-    profiles = getDemoAccounts();
+  if (accounts.length === 0) {
+    accounts = getDemoAccounts();
     source = "demo";
-    await setCache(userHash, CACHE_SK, profiles, "demo", TTL.DEMO);
-  } else if (profiles.length === 0) {
-    // MCP succeeded but returned empty -- still use demo for a good experience
-    profiles = getDemoAccounts();
-    source = "demo";
-    await setCache(userHash, CACHE_SK, profiles, "demo", TTL.DEMO);
+    await setCache(userHash, CACHE_SK, accounts, "demo", TTL.DEMO);
   }
 
-  const totalCount = profiles.length;
+  const totalCount = accounts.length;
   const start = (page - 1) * pageSize;
 
   return NextResponse.json({
-    accounts: profiles.slice(start, start + pageSize),
+    accounts: accounts.slice(start, start + pageSize),
     totalCount,
     page,
     pageSize,
